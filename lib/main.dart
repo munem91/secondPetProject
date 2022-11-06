@@ -1,9 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MySecondApp());
+void main() => runApp(MySecondApp());
 
-class MySecondApp extends StatelessWidget {
+class MySecondApp extends StatefulWidget {
   const MySecondApp({super.key});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _MySecondAppState();
+  }
+}
+
+class _MySecondAppState extends State<MySecondApp> {
+  bool _loading = true;
+  double _progressValue = 0.0;
+
+  @override
+  void initState() {
+    _loading = false;
+    _progressValue = 0.0;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,27 +36,49 @@ class MySecondApp extends StatelessWidget {
         body: Center(
           child: Container(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                LinearProgressIndicator(value: 23),
-                Text(
-                  '23%',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                Text(
-                  'Press button to downoload%',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-              ],
-            ),
+            child: _loading
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      LinearProgressIndicator(value: _progressValue),
+                      Text(
+                        '${(_progressValue * 100).round()}%',
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ],
+                  )
+                : const Text(
+                    'Press button to downoload',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
           ),
         ),
-        floatingActionButton: const FloatingActionButton(
-          onPressed: null,
-          child: Icon(Icons.download),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              _loading = !_loading;
+              _updateProgress();
+            });
+          },
+          child: const Icon(Icons.download),
         ),
       ),
     );
+  }
+
+  void _updateProgress() {
+    const oneSec = Duration(seconds: 1);
+    Timer.periodic(oneSec, (Timer t) {
+      setState(() {
+        _progressValue += 0.2;
+
+        if (_progressValue.toStringAsFixed(1) == '1.0') {
+          _loading = false;
+          t.cancel();
+          _progressValue = 0.0;
+          return;
+        }
+      });
+    });
   }
 }
